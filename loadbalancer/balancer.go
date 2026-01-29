@@ -106,7 +106,8 @@ func (lb *LoadBalancer) GetAllBackends(model string) []*BackendStatus {
 	}
 
 	result := make([]*BackendStatus, n)
-	startIdx := atomic.LoadUint64(&balancer.current) % uint64(n)
+	// 使用 AddUint64 递增计数器，确保每次请求轮询到不同后端
+	startIdx := atomic.AddUint64(&balancer.current, 1) % uint64(n)
 
 	for i := 0; i < n; i++ {
 		idx := (int(startIdx) + i) % n
