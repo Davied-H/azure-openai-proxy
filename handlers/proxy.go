@@ -50,6 +50,7 @@ func extractModel(body []byte) string {
 // Azure OpenAI 不支持的参数列表
 var unsupportedParams = []string{
 	"chat_template_kwargs",
+	"enable_thinking",
 }
 
 // transformRequestBody 转换请求体中的参数
