@@ -51,6 +51,7 @@ func extractModel(body []byte) string {
 var unsupportedParams = []string{
 	"chat_template_kwargs",
 	"enable_thinking",
+	"thinking",
 }
 
 // transformRequestBody 转换请求体中的参数
