@@ -1,0 +1,12 @@
+services:
+  estha-go-api:
+    image: alpine:3.21.3
+    container_name: azure-openai-proxy
+    restart: always
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./build/linux-amd64/azure-openai-proxy:/app/azure-openai-proxy
+    command: ["./azure-openai-proxy"]
