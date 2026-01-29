@@ -47,6 +47,31 @@ func extractModel(body []byte) string {
 	return req.Model
 }
 
+// transformRequestBody 转换请求体中的参数
+// 将 max_tokens 转换为 max_completion_tokens（新版 Azure OpenAI API 要求）
+func transformRequestBody(body []byte, logger *zap.Logger) []byte {
+	var data map[string]interface{}
+	if err := json.Unmarshal(body, &data); err != nil {
+		return body
+	}
+
+	// 如果存在 max_tokens，转换为 max_completion_tokens
+	if maxTokens, exists := data["max_tokens"]; exists {
+		if _, hasNewParam := data["max_completion_tokens"]; !hasNewParam {
+			data["max_completion_tokens"] = maxTokens
+			delete(data, "max_tokens")
+			logger.Info("transformed max_tokens to max_completion_tokens",
+				zap.Any("value", maxTokens))
+		}
+	}
+
+	newBody, err := json.Marshal(data)
+	if err != nil {
+		return body
+	}
+	return newBody
+}
+
 // HandleEmbeddings 处理 Embedding 请求
 func (h *ProxyHandler) HandleEmbeddings(c *gin.Context) {
 	h.handleOpenAIRequest(c, "embeddings")
@@ -98,6 +123,9 @@ func (h *ProxyHandler) handleOpenAIRequest(c *gin.Context, apiType string) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("model %s is not configured", model)})
 		return
 	}
+
+	// 转换请求参数（如 max_tokens -> max_completion_tokens）
+	body = transformRequestBody(body, h.logger)
 
 	h.proxyWithModel(c, model, body, apiType)
 }

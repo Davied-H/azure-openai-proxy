@@ -1,5 +1,5 @@
 services:
-  estha-go-api:
+  azure-openai-proxy:
     image: alpine:3.21.3
     container_name: azure-openai-proxy
     restart: always
