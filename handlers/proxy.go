@@ -47,13 +47,21 @@ func extractModel(body []byte) string {
 	return req.Model
 }
 
+// Azure OpenAI 不支持的参数列表
+var unsupportedParams = []string{
+	"chat_template_kwargs",
+}
+
 // transformRequestBody 转换请求体中的参数
-// 将 max_tokens 转换为 max_completion_tokens（新版 Azure OpenAI API 要求）
+// 1. 将 max_tokens 转换为 max_completion_tokens（新版 Azure OpenAI API 要求）
+// 2. 移除 Azure OpenAI 不支持的参数
 func transformRequestBody(body []byte, logger *zap.Logger) []byte {
 	var data map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
 		return body
 	}
+
+	modified := false
 
 	// 如果存在 max_tokens，转换为 max_completion_tokens
 	if maxTokens, exists := data["max_tokens"]; exists {
@@ -62,7 +70,21 @@ func transformRequestBody(body []byte, logger *zap.Logger) []byte {
 			delete(data, "max_tokens")
 			logger.Info("transformed max_tokens to max_completion_tokens",
 				zap.Any("value", maxTokens))
+			modified = true
 		}
+	}
+
+	// 移除不支持的参数
+	for _, param := range unsupportedParams {
+		if _, exists := data[param]; exists {
+			delete(data, param)
+			logger.Info("removed unsupported parameter", zap.String("param", param))
+			modified = true
+		}
+	}
+
+	if !modified {
+		return body
 	}
 
 	newBody, err := json.Marshal(data)
