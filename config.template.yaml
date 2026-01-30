@@ -1,0 +1,77 @@
+# Azure OpenAI Proxy 配置模板
+# 复制此文件为 config.yaml 并填入实际值
+
+# 服务器配置
+server:
+  port: 3000  # 监听端口，默认 8080
+
+# API Key 认证配置
+# 启用后，客户端必须携带有效的 API Key 才能访问 /v1/* 接口
+# 支持的 header 格式：
+#   - Authorization: Bearer <key>
+#   - api-key: <key>
+#   - x-api-key: <key>
+auth:
+  enabled: true  # 设为 false 禁用认证
+  keys:
+    - name: "default"           # key 名称，用于日志标识
+      key: "your-api-key-here"  # 实际的 API Key
+    # 可配置多个 key
+    # - name: "user-alice"
+    #   key: "sk-alice-key"
+    # - name: "user-bob"
+    #   key: "sk-bob-key"
+
+# 模型配置
+# 每个模型可以配置多个后端，请求时会轮询负载均衡
+# 后端不可用时自动故障转移到下一个后端
+models:
+  # GPT-4 模型示例
+  gpt-4:
+    backends:
+      - endpoint: "https://your-resource-name.openai.azure.com"  # Azure OpenAI 端点
+        api_key: "your-azure-api-key"                            # Azure API Key
+        deployment: "gpt-4"                                       # 部署名称
+        api_version: "2025-04-01-preview"                        # API 版本
+      # 配置多个后端实现负载均衡和高可用
+      # - endpoint: "https://your-resource-name-2.openai.azure.com"
+      #   api_key: "your-azure-api-key-2"
+      #   deployment: "gpt-4"
+      #   api_version: "2025-04-01-preview"
+
+  # GPT-4o 模型示例
+  gpt-4o:
+    backends:
+      - endpoint: "https://your-resource-name.openai.azure.com"
+        api_key: "your-azure-api-key"
+        deployment: "gpt-4o"
+        api_version: "2025-04-01-preview"
+
+  # GPT-3.5-turbo 模型示例
+  gpt-3.5-turbo:
+    backends:
+      - endpoint: "https://your-resource-name.openai.azure.com"
+        api_key: "your-azure-api-key"
+        deployment: "gpt-35-turbo"
+        api_version: "2025-04-01-preview"
+
+  # Embedding 模型示例
+  text-embedding-ada-002:
+    backends:
+      - endpoint: "https://your-resource-name.openai.azure.com"
+        api_key: "your-azure-api-key"
+        deployment: "text-embedding-ada-002"
+        api_version: "2023-05-15"
+
+  # text-embedding-3-small 模型示例
+  text-embedding-3-small:
+    backends:
+      - endpoint: "https://your-resource-name.openai.azure.com"
+        api_key: "your-azure-api-key"
+        deployment: "text-embedding-3-small"
+        api_version: "2023-05-15"
+
+# 重试配置
+retry:
+  max_attempts: 3  # 最大重试次数（尝试不同后端）
+  timeout: 30s     # 单次请求超时时间
