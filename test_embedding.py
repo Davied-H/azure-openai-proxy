@@ -5,7 +5,7 @@ from openai import OpenAI
 
 if __name__ == '__main__':
     client = OpenAI(
-        base_url="http://localhost:8080/v1",
+        base_url="http://localhost:3000/v1",
         api_key="sk-your-api-key"
     )
 
@@ -13,6 +13,6 @@ if __name__ == '__main__':
         model="text-embedding-ada-002",
         input="Hello, world!"
     )
-
+    
     print(f"Embedding 维度: {len(response.data[0].embedding)}")
     print(f"Token 使用: {response.usage}")
